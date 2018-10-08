@@ -58,8 +58,12 @@ type Car = {
     // so documents can be found and mapped to correct FSharp type
     member _this._type = "Car"
 
-// Get a DB client and create a collection.
+// Get a DB client using the well know local emulator credentials. and create a collection.
+let endPoint = Uri("https://localhost:8081")
+let accountKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
 let client = newClient endPoint accountKey serializerSettings connectionPolicy
+ 
+// Create a new collection.
 let collId = CollId "Collection"
 let throughPut = 400
 let storedProcedures = []
