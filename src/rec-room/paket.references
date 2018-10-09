@@ -1,0 +1,3 @@
+FSharp.Core
+nuget Newtonsoft.Json
+nuget Microsoft.Azure.DocumentDB

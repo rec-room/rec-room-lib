@@ -1,0 +1,13 @@
+source https://www.nuget.org/api/v2
+
+framework: >= net461
+nuget Expecto
+nuget FSharp.Core
+nuget Newtonsoft.Json
+nuget Microsoft.Azure.DocumentDB
+
+group Build
+source https://www.nuget.org/api/v2
+
+nuget FAKE
+
