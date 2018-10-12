@@ -1,4 +1,3 @@
-#load "CosmosDB.fs"
-open RecRoom
-
-// Define your library scripting code here
+if 1 = 1
+then Ok true
+else Error "err"

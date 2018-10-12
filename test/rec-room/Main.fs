@@ -1,4 +1,4 @@
-module rec-room
+module recroom
 
 open Expecto
 

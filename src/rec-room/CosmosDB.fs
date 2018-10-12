@@ -1,6 +1,7 @@
 ﻿namespace RecRoom
 
-module Client =
+open System.Data.SqlClient
+module Client2 =
 
     open SerializationUtil
     open Microsoft.Azure.Documents
@@ -10,9 +11,6 @@ module Client =
     open System.Linq
 
 
-    type RecRoom = {
-        Name : string
-    }
 
     let conPolicy = ConnectionPolicy()
     conPolicy.ConnectionMode <- ConnectionMode.Direct
@@ -71,7 +69,7 @@ module Client =
         let options = RequestOptions()
         options.OfferThroughput <- Nullable throughPut
         try
-            (dbClient.CreateDocumentCollectionAsync(dbUri, coll, options)).Wait()
+            (dbClient.CreateDocumentCollectionIfNotExistsAsync (dbUri, coll, options)).Wait()
             storedProcs |> List.iter (fun storedProc ->
                 let name, javaScript = storedProc
                 createStoredProcedure colId name javaScript |> ignore)
@@ -90,7 +88,7 @@ module Client =
 
     let deleteCollection colId =
         try
-            (dbClient.DeleteDocumentCollectionAsync(collUri (colId.ToString()))).Wait()
+            (dbClient.DeleteDocumentCollectionAsync(collUri (colId.ToString()) ) ).Wait()
             Some "deleted"
         with
             | :? System.AggregateException as ex ->
@@ -156,7 +154,7 @@ module Client =
 
 
     let private makeQuery sql  =
-        SqlQuerySpec(sql, []])
+        SqlQuerySpec(sql, new SqlParameterCollection())
 
     /// Execute the given SQL returning a collection of projected documents.
     let query<'T> colId sql =

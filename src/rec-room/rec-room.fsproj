@@ -9,6 +9,8 @@
     <Compile Include="ReflectionUtil.fs" />
     <Compile Include="SerializationUtil.fs" />
     <Compile Include="CosmosDB.fs" />
+    <Compile Include="RecRoom.fs" />
+    <None Include="Sample.fsx" />
     <None Include="Script.fsx" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
