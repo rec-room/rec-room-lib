@@ -40,20 +40,10 @@ module Client =
     // DATABASE OPERATIONS
     //
 
-    /// Return a context for accessing a database. If create is true then create a database if the id does not exist.
-    let dbContext (endpoint: Uri) (accountKey: string) dbName create =
-        let connPolicy = ConnectionPolicy()
-        connPolicy.ConnectionMode <- ConnectionMode.Direct
-        connPolicy.ConnectionProtocol <- Protocol.Tcp
-
-        let dbClient  = new DocumentClient (endpoint, accountKey, connPolicy)
-        dbClient.OpenAsync().Wait()
-        {   Endpoint = endpoint
-            AccountKey = accountKey
-            ConnectionPolicy = connPolicy
-            Id = dbName
-            Client = dbClient}
-
+    let ensureDb dbCntxt =
+        let db = Database()
+        db.Id <- (dbCntxt.Id.ToString())
+        (dbCntxt.Client.CreateDatabaseIfNotExistsAsync(db)).Wait()
 
     let createDb dbCntxt =
         let db = Database()
@@ -72,11 +62,23 @@ module Client =
                     then None else reraise()
                 | _ -> reraise()
 
+    /// Return a context for accessing a database. If create is true then create a database if the id does not exist.
+    let dbContext (endpoint: Uri) (accountKey: string) dbName createIfAbsent =
+        let connPolicy = ConnectionPolicy()
+        connPolicy.ConnectionMode <- ConnectionMode.Direct
+        connPolicy.ConnectionProtocol <- Protocol.Tcp
 
-    let ensureDb dbCntxt =
-        let db = Database()
-        db.Id <- (dbCntxt.Id.ToString())
-        (dbCntxt.Client.CreateDatabaseIfNotExistsAsync(db)).Wait()
+        let dbClient  = new DocumentClient (endpoint, accountKey, connPolicy)
+        dbClient.OpenAsync().Wait()
+        let cntxt = {
+            Endpoint = endpoint
+            AccountKey = accountKey
+            ConnectionPolicy = connPolicy
+            Id = dbName
+            Client = dbClient}
+        if createIfAbsent then ensureDb cntxt
+        cntxt
+
 
 
 
@@ -115,7 +117,7 @@ module Client =
     /// Return all collections in the database.
     let collections dbCntxt=
         dbCntxt.Client.CreateDocumentCollectionQuery(dbCntxt.DbUri).AsEnumerable()
-        |> Seq.map (fun c -> dbCntxt.CollectionContext c.ResourceId )
+        |> Seq.map (fun c -> dbCntxt.CollectionContext c.Id )
 
     /// Try to delete a collection. Return None if there is no collection with the given id.
     let tryDeleteCollection collCntxt =
@@ -135,12 +137,16 @@ module Client =
         collections dbContext
         |> Seq.map (fun c -> tryDeleteCollection c)
 
+    let collectionContext dbCntxt collId throughPut createIfAbsent =
+        let cntxt = {DbContext = dbCntxt; CollectionId = collId}
+        if createIfAbsent then ensureCollection cntxt throughPut
+        cntxt
 
 
     // OPERATIONS ON RECORDS
     //
 
-    /// Insert a record. The record should have an "id" property. Will fail if the id already exists. If
+    /// Insert a record. Will fail if a record with the id already exists. If
     /// it is possible the record already exists use 'upsert' or 'tryInsert'
     let insert collCntxt record =
         let resp = (collCntxt.DbContext.Client.CreateDocumentAsync(collCntxt.CollUri, record, null, true)).Result

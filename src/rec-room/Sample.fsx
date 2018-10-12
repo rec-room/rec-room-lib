@@ -26,15 +26,20 @@ type Person = {
       member _this.partitionKey = "1"
 
 
-// Get a DB client using the well know local emulator credentials. and create a collection.
-let endPoint = Uri("https://localhost:8081")
-let accountKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
+// Get a DB context using the well know local emulator credentials. Create the DB if absent
+// let endPoint = Uri("https://localhost:8081")
+// let accountKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
+
+let endPoint = Uri("https://e57666f4-0ee0-4-231-b9ee.documents.azure.com:443/")
+let accountKey = "dgomYbZnivntbNcu0uLV6cH2JpLiq5iAOuFeLrMpPXhFWrDAm23Bu4q9uTqAkFRrg3CO5EmlBgwHLuNSILo5hw=="
+
 let dbCntxt = dbContext endPoint accountKey "RRTest" true
 
-// Create a new collection.
-let collCntxt = dbCntxt.CollContext "TestColl1"
-let throughPut = 400
-ensureColl collCntxt throughPut
+// Delete all collections
+deleteCollections dbCntxt
+
+// Get a collection context and create the collection if absent.
+let collCntxt = collectionContext dbCntxt "TestColl1" 400 true
 
 // Create store, retrive, update and delete a person
 let personId = Guid.NewGuid().ToString()
