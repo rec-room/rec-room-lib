@@ -107,11 +107,13 @@ module Client =
                 | _ -> reraise()
 
     /// Create a collection of one with the collection id does not already exist.
-    let ensureCollection collCntxt throughPut =
+    let ensureCollection collCntxt options =
         let coll = DocumentCollection()
         coll.Id <- (collCntxt.CollectionId.ToString())
-        let options = RequestOptions()
-        options.OfferThroughput <- Nullable throughPut
+        let options =
+            match options with
+            | None -> RequestOptions()
+            | Some o -> o
         (collCntxt.DbContext.Client.CreateDocumentCollectionIfNotExistsAsync (collCntxt.DbContext.DbUri, coll, options)).Wait()
 
     /// Return all collections in the database.
